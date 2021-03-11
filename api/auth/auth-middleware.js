@@ -1,3 +1,5 @@
+const usersModel = require('../users/users-model')
+const { orWhereNotExists } = require('../../data/db-config')
 /*
   If the user does not have a session saved in the server
 
@@ -6,8 +8,12 @@
     "message": "You shall not pass!"
   }
 */
-function restricted() {
-
+const restricted () => async (req, res, next)=> {
+    try {
+      if (!req.session || !req.session.user)
+    } catch(err) {
+       next (err)
+    }
 }
 
 /*
