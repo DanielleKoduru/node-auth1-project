@@ -8,7 +8,7 @@ const { orWhereNotExists } = require('../../data/db-config')
     "message": "You shall not pass!"
   }
 */
-const restricted () => async (req, res, next)=> {
+const restricted = () => async (req, res, next)=> {
     try {
       if (!req.session || !req.session.user)
     } catch(err) {
@@ -53,3 +53,9 @@ function checkPasswordLength() {
 }
 
 // Don't forget to add these to the `exports` object so they can be required in other modules
+module.exports = {
+  restricted,
+  checkUsernameFree,
+  checkUsernameExists,
+  checkPasswordLength,
+}
