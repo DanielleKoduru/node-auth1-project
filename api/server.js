@@ -13,13 +13,14 @@ server.use(helmet());
 server.use(express.json());
 server.use(cors());
 server.use(session({
-	resave: false, 
-	saveUninitialized: false, 
-	secret: "keep it secret keep it safe", 
-	store: new KnexSessionStore({
-		knex: db, 
-		createtable: true, 
-	}),
+  name: "chocolatechip",
+  resave: false,
+  saveUninitialized: false,
+  secret: "keep it secret keep it safe",
+  store: new KnexSessionStore({
+    knex: db,
+    createtable: true,
+  }),
 }))
 
 server.use(usersRouter)
