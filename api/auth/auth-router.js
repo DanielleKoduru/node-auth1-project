@@ -36,7 +36,6 @@ router.post("/api/auth/register", checkPasswordLength(), checkUsernameFree(), as
     const { username, password } = req.body
     const hashPass = await bcrypt.hash(password, 8)
     const newUser = await Users.add({ username, password: hashPass })
-    // console.log("hi")
     res.status(200).json({ user_id: newUser.user_id, username })
   } catch (err) {
     next(err)
@@ -99,19 +98,17 @@ router.post("/api/auth/login", checkUsernameExists(), async (req, res, next) => 
  */
 router.get("/api/auth/logout", async (req, res, next) => {
   try {
-    if (!req.session.user) {
+    if (!req.session.chocolatechip) {
       return res.status(200).json({
-        message: "logged out"
+        message: "no session"
       })
     }
     req.session.destroy((err) => {
       if (err) {
-        return res.status(200).json({
-          message: "logged out"
-        })
+        next(err)
       } else {
         res.status(200).json({
-          message: "no session"
+          message: "logged out"
         })
       }
     })

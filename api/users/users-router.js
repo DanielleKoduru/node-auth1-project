@@ -27,10 +27,11 @@ const router = express.Router()
     "message": "You shall not pass!"
   }
  */
+//only error left, not returning the correct value in message
 router.get("/api/users", restricted(), async (req, res, next) => {
   try {
-    const users = await Users.find()
-    res.json(users)
+    const { user_id, username } = await Users.find()
+    res.status(200).json({ user_id, username })
   } catch (err) {
     next(err)
   }
