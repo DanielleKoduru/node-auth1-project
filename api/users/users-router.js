@@ -29,7 +29,8 @@ const router = express.Router()
  */
 router.get("/api/users", restricted(), async (req, res, next) => {
   try {
-    res.json(await Users.find())
+    const users = await Users.find()
+    res.json(users)
   } catch (err) {
     next(err)
   }
@@ -38,4 +39,4 @@ router.get("/api/users", restricted(), async (req, res, next) => {
 
 // Don't forget to add the router to the `exports` object so it can be required in other modules
 
-module.exports = router
+module.exports = router;

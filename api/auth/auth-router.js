@@ -2,7 +2,7 @@
 // middleware functions from `auth-middleware.js`. You will need them here!
 const express = require("express")
 const bcrypt = require("bcryptjs")
-// const { checkUsernameFree, checkUsernameExists, checkPasswordLength } = require("../auth/auth-middleware")
+const { checkUsernameFree, checkUsernameExists, checkPasswordLength } = require("../auth/auth-middleware")
 const Users = require("../users/users-model")
 
 
@@ -30,14 +30,14 @@ const router = express.Router()
     "message": "Password must be longer than 3 chars"
   }
  */
-// checkPasswordLength(), checkUsernameFree(),
-router.post("/api/auth/register", async (req, res, next) => {
+
+router.post("/api/auth/register", checkPasswordLength(), checkUsernameFree(), async (req, res, next) => {
   try {
     const { username, password } = req.body
-    const hashPass = await bcrypt.hash(password, 14)
+    const hashPass = await bcrypt.hash(password, 8)
     const newUser = await Users.add({ username, password: hashPass })
-
-    res.status(201).json(newUser)
+    // console.log("hi")
+    res.status(200).json({ user_id: newUser.user_id, username })
   } catch (err) {
     next(err)
   }
@@ -58,24 +58,24 @@ router.post("/api/auth/register", async (req, res, next) => {
     "message": "Invalid credentials"
   }
  */
-// checkUsernameExists()
-router.post("/api/auth/login", async (req, res, next) => {
+
+router.post("/api/auth/login", checkUsernameExists(), async (req, res, next) => {
   try {
     const { username, password } = req.body
     const user = await Users.findBy({ username })
 
-    const passwordValid = await bcrypt.compare(password, user ? user.password : "")
+    const passwordValid = await bcrypt.compare(password, user[0].password)
 
     if (!passwordValid) {
       return res.status(401).json({
-        message: "Invalid Credentials",
+        message: "Invalid credentials",
       })
     }
 
     req.session.chocolatechip = user
 
     res.status(200).json({
-      message: `Welcome ${user.username}!`,
+      message: `Welcome ${user[0].username}!`
     })
   } catch (err) {
     next(err)
@@ -99,15 +99,16 @@ router.post("/api/auth/login", async (req, res, next) => {
  */
 router.get("/api/auth/logout", async (req, res, next) => {
   try {
+    if (!req.session.user) {
+      return res.status(200).json({
+        message: "logged out"
+      })
+    }
     req.session.destroy((err) => {
       if (err) {
-        next(err)
-      }
-      if (!req.session.users) {
-        res.status(200).json({
+        return res.status(200).json({
           message: "logged out"
         })
-        next(err)
       } else {
         res.status(200).json({
           message: "no session"
