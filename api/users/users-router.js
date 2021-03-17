@@ -30,8 +30,8 @@ const router = express.Router()
 //only error left, not returning the correct value in message
 router.get("/api/users", restricted(), async (req, res, next) => {
   try {
-    const { user_id, username } = await Users.find()
-    res.status(200).json({ user_id, username })
+    const users = await Users.find()
+    res.status(200).json(users)
   } catch (err) {
     next(err)
   }
