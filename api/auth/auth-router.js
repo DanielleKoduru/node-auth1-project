@@ -1,6 +1,12 @@
 // Require `checkUsernameFree`, `checkUsernameExists` and `checkPasswordLength`
 // middleware functions from `auth-middleware.js`. You will need them here!
+const express = require("express")
+const bcrypt = require("bcryptjs")
+const { checkUsernameFree, checkUsernameExists, checkPasswordLength } = require("../auth/auth-middleware")
+const Users = require("../users/users-model")
 
+
+const router = express.Router()
 
 /**
   1 [POST] /api/auth/register { "username": "sue", "password": "1234" }
@@ -25,6 +31,16 @@
   }
  */
 
+router.post("/api/auth/register", checkPasswordLength(), checkUsernameFree(), async (req, res, next) => {
+  try {
+    const { username, password } = req.body
+    const hashPass = await bcrypt.hash(password, 8)
+    const newUser = await Users.add({ username, password: hashPass })
+    res.status(200).json({ user_id: newUser.user_id, username })
+  } catch (err) {
+    next(err)
+  }
+})
 
 /**
   2 [POST] /api/auth/login { "username": "sue", "password": "1234" }
@@ -42,6 +58,28 @@
   }
  */
 
+router.post("/api/auth/login", checkUsernameExists(), async (req, res, next) => {
+  try {
+    const { username, password } = req.body
+    const user = await Users.findBy({ username })
+
+    const passwordValid = await bcrypt.compare(password, user[0].password)
+
+    if (!passwordValid) {
+      return res.status(401).json({
+        message: "Invalid credentials",
+      })
+    }
+
+    req.session.chocolatechip = user
+
+    res.status(200).json({
+      message: `Welcome ${user[0].username}!`
+    })
+  } catch (err) {
+    next(err)
+  }
+})
 
 /**
   3 [GET] /api/auth/logout
@@ -58,6 +96,25 @@
     "message": "no session"
   }
  */
+router.get("/api/auth/logout", async (req, res, next) => {
+  try {
+    if (!req.session.chocolatechip) {
+      return res.status(200).json({
+        message: "no session"
+      })
+    }
+    req.session.destroy((err) => {
+      if (err) {
+        next(err)
+      } else {
+        res.status(200).json({
+          message: "logged out"
+        })
+      }
+    })
+  } catch (err) {
+    next(err)
+  }
+})
 
- 
-// Don't forget to add the router to the `exports` object so it can be required in other modules
+module.exports = router
